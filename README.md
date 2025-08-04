@@ -11,3 +11,22 @@ For testing the docker containers locally:
 docker build -t grain-boundary . && \
 docker run -p 8080:2000 grain-boundary
 ```
+
+For testing the kubernetes deployment:
+
+```bash
+# update docker image
+docker build -t andrewsc32/grain-boundary .
+docker push andrewsc32/grain-boundary
+
+# update kubernetes config
+kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+
+# update deployment
+kubectl rollout restart deployment grain-boundary
+
+# expose app
+minikube service --all
+```

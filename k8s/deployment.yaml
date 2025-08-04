@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: grain-boundary
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app: grain-boundary
@@ -16,4 +16,4 @@ spec:
       - name: grain-boundary
         image: andrewsc32/grain-boundary
         ports:
-        - containerPort: 3000
+        - containerPort: 2000
