@@ -10,6 +10,7 @@ class DelayController < ApplicationController
       current_port: current_port,
       status: "ok" 
     }.merge(ENV.to_h)
+    # TODO: never run this in production
   end
 
   def sleep_time
