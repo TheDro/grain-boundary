@@ -9,7 +9,7 @@ class DelayController < ApplicationController
     render json: { 
       current_port: current_port,
       status: "ok" 
-    }
+    }.merge(ENV.to_h)
   end
 
   def sleep_time
