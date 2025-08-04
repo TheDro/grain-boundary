@@ -4,7 +4,7 @@ class DelayController < ApplicationController
     sleep_time
     run_time
 
-    current_port = request.port
+    current_port = ENV["PORT"]
 
     render json: { 
       current_port: current_port,

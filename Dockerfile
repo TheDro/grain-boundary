@@ -10,6 +10,9 @@ RUN bundle install
 
 COPY . .
 
-EXPOSE 3000
+COPY docker/nginx.conf /etc/nginx/nginx.conf
+COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-CMD ["rails", "server", "-b", "0.0.0.0"]
+EXPOSE 2000
+
+CMD ["/usr/bin/supervisord"]
