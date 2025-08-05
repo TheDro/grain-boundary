@@ -8,9 +8,9 @@ class DelayController < ApplicationController
 
     render json: { 
       current_port: current_port,
-      status: "ok" 
-    }.merge(ENV.to_h)
-    # TODO: never run this in production
+      status: "ok",
+      host_name: ENV['HOSTNAME']
+    }
   end
 
   def sleep_time
