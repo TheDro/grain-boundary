@@ -15,6 +15,10 @@ docker run -p 8080:2000 grain-boundary
 For testing the kubernetes deployment:
 
 ```bash
+# start minikube
+# start docker desktop
+minikube start
+
 # update docker image
 docker build -t andrewsc32/grain-boundary .
 docker push andrewsc32/grain-boundary

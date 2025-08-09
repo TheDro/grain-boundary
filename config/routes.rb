@@ -10,6 +10,10 @@ Rails.application.routes.draw do
   get "c" => "delay#index"
   get "d" => "delay#index"
 
+  get "connections" => "connections#index"
+  post "connections" => "connections#create"
+  delete "connections" => "connections#destroy"
+
   # Defines the root path route ("/")
   # root "posts#index"
 end
