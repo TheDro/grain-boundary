@@ -1,0 +1,193 @@
+<html>
+<head>
+  <title>Connection viewer</title>
+  <link rel="stylesheet" href="main.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/marx-css@4.1.1/css/marx.min.css">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    .columns {
+      display: flex;
+      flex-direction: row;
+    }
+
+    .column {
+      width: 25%;
+      padding: 10px;
+    }
+
+    .row {
+      display: flex;
+      flex-direction: row;
+    }
+  </style>
+</head>
+<body>
+  <h1>Connections</h1>
+  <button id="poll">Poll</button>
+  <button id="clear">Clear</button>
+  <button id="save">Save</button>
+
+  <div class="columns">
+    <div class="column connection">
+      <div class="row">
+        <input type="text" placeholder="URL 1" class="url">
+        <button class="send">Send</button>
+      </div>
+      <pre class="status"></pre>
+    </div>
+    <div class="column connection">
+      <div class="row">
+        <input type="text" placeholder="URL 2" class="url">
+        <button class="send">Send</button>
+      </div>
+      <pre class="status"></pre>
+    </div>
+    <div class="column connection">
+      <div class="row">
+        <input type="text" placeholder="URL 3" class="url">
+        <button class="send">Send</button>
+      </div>
+      <pre class="status"></pre>
+    </div>
+    <div class="column connection">
+      <div class="row">
+        <input type="text" placeholder="URL 4" class="url">
+        <button class="send">Send</button>
+      </div>
+      <pre class="status"></pre>
+    </div>
+  </div>
+  <script src="main.js"></script>
+  <script>
+
+    const localUrl = "http://localhost:3000"
+
+    function save() {
+      let urls = []
+      document.querySelectorAll(".url").forEach(urlElement => {
+        urls.push(urlElement.value)
+      })
+      localStorage.setItem("urls", JSON.stringify(urls))
+    }
+
+    function load() {
+      let urls = JSON.parse(localStorage.getItem("urls"))
+      if (urls) {
+        document.querySelectorAll(".url").forEach((urlElement, index) => {
+          urlElement.value = urls[index]
+        })
+      }
+    }
+
+    load()
+
+    document.getElementById("save").addEventListener("click", save)
+
+    let http = {
+      get: url => fetch(url).then(response => response.json()),
+      post: (url, data) => fetch(url, { 
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data) 
+      }).then(response => response.json()),
+      delete: url => fetch(url, { method: "DELETE" }).then(response => response.json())
+    }
+
+    let connectionElements = document.querySelectorAll(".connection")
+
+    connectionElements.forEach(connectionElement => {
+      connectionElement.querySelector(".send").addEventListener("click", () => {
+        const url = connectionElement.querySelector(".url").value
+        http.post(localUrl + "/connections", {url}).then(response => {
+          console.log(response)
+        })
+      })
+    })
+
+    let timeout = null
+
+    function poll(delay) {
+      timeout = setTimeout(() => {
+        http.get(localUrl + "/connections").then(({connections}) => {
+          connectionElements.forEach((connectionElement, index) => {
+            const url = connectionElement.querySelector(".url").value
+            let currentConnections = connections.filter(connection => {
+              return url && connection.url && connection.url.indexOf(url) >= 0
+            })
+            console.log({url, connections, currentConnections})
+            let statusElement = connectionElement.querySelector(".status")
+            statusElement.innerHTML = ""
+            currentConnections.forEach(connection => {
+              statusElement.appendChild(connectionComponent(connection))
+            })
+          })
+        }).then(() => {
+          poll(delay)
+        })
+        
+      }, delay)
+    }
+
+    function connectionComponent(connection) {
+      // <div><span class="status">{status}</span> - <span>{elapsed_time}</span></div>
+      // create a div
+      // create a span for the status
+      // create a span for the elapsed time
+      let status, statusColor, elapsedTime = null
+      if (connection.finished_at) {
+        status = `complete ${connection.response_code}`
+        statusColor = connection.response_code == 200 ? "green" : "red"
+        elapsedTime = (new Date(connection.finished_at) - new Date(connection.started_at)) / 1000
+      } else {
+        status = "pending"
+        statusColor = "orange"
+        elapsedTime = (new Date() - new Date(connection.started_at)) / 1000
+      }
+
+      let div = document.createElement("div")
+      let spanStatus = document.createElement("span")
+      let spanElapsedTime = document.createElement("span")
+      spanStatus.innerHTML = status
+      spanStatus.style.color = statusColor
+      spanElapsedTime.innerHTML = elapsedTime
+      div.appendChild(spanStatus)
+      div.appendChild(document.createTextNode(" - "))
+      div.appendChild(spanElapsedTime)
+      return div
+    }
+
+    function startPolling() {
+      poll(500)
+    }
+
+    document.querySelector("#poll").addEventListener("click", () => {
+      if (timeout) {
+        clearTimeout(timeout)
+        timeout = null
+        document.querySelector("#poll").innerHTML = "Poll"
+      } else {
+        startPolling()
+        document.querySelector("#poll").innerHTML = "Stop"
+      }
+    })
+
+    document.querySelector("#clear").addEventListener("click", () => {
+      http.delete(localUrl + "/connections").then((response) => {
+        console.log(response)
+      })
+    })
+
+
+
+
+  </script>
+
+
+</body>
+</html>

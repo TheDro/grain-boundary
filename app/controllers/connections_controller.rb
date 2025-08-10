@@ -13,6 +13,11 @@ class ConnectionsController < ApplicationController
   end
 
   def create
+    return render json: {
+      status: "error",
+      message: "Missing url"
+    } if params[:url].blank?
+
     connection = {
       id: self.class.connections.size + 1,
       url: params[:url],
@@ -24,9 +29,14 @@ class ConnectionsController < ApplicationController
 
     thread = Thread.new do
       connection[:thread] = Thread.current
-      response = Faraday.get(params[:url])
+      response = Faraday.get(params[:url]) do |req|
+        req.options.timeout = 300
+      end
       connection[:finished_at] = Time.now
       connection[:response_code] = response.status
+    rescue => e
+      connection[:finished_at] = Time.now
+      connection[:response_code] = "error"
     end
 
     connection[:thread] = thread
