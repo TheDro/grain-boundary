@@ -23,6 +23,7 @@ class ConnectionsController < ApplicationController
       url: params[:url],
       started_at: Time.now,
       response_code: nil,
+      response: nil,
       finished_at: nil,
       thread: nil
     }
@@ -34,6 +35,7 @@ class ConnectionsController < ApplicationController
       end
       connection[:finished_at] = Time.now
       connection[:response_code] = response.status
+      connection[:response] = JSON.parse(response.body)
     rescue => e
       connection[:finished_at] = Time.now
       connection[:response_code] = "error"
