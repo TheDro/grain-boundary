@@ -34,3 +34,10 @@ kubectl rollout restart deployment grain-boundary
 # expose app
 minikube service --all
 ```
+
+For testing the connection handling:
+
+```bash
+cd javascript
+vite
+```
